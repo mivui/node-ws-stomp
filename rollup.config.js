@@ -1,21 +1,21 @@
 import commonjs from '@rollup/plugin-commonjs';
 import json from '@rollup/plugin-json';
-import resolve from '@rollup/plugin-node-resolve';
+// import resolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 import typescript from '@rollup/plugin-typescript';
 import { defineConfig } from 'rollup';
 import { dts } from 'rollup-plugin-dts';
 
-const extensions = ['.mjs', '.cjs', '.js', '.ts', '.json', '.node'];
+// const extensions = ['.mjs', '.cjs', '.js', '.ts', '.json', '.node'];
 
 const input = ['./packages/index.ts'];
 
 const plugins = [
   commonjs(),
-  resolve({
-    extensions,
-    preferBuiltins: false,
-  }),
+  // resolve({
+  //   extensions,
+  //   preferBuiltins: false,
+  // }),
   json({
     namedExports: false,
   }),
