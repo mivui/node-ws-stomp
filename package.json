@@ -1,6 +1,6 @@
 {
   "name": "ws-stomp",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "ws-stomp is a simple Node.js server base on websocket stomp",
   "type": "module",
   "main": "dist/index.cjs.js",
@@ -29,14 +29,13 @@
     "@rollup/plugin-replace": "^6.0.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^12.3.0",
-    "@types/node": "^24.10.9",
-    "happy-dom": "^20.3.4",
-    "rollup": "^4.55.3",
+    "@types/node": "^24.11.0",
+    "rollup": "^4.59.0",
     "rollup-plugin-dts": "^6.3.0",
     "tslib": "^2.8.1",
     "typescript": "^5.9.3",
-    "typescript-eslint-standard": "^9.75.0",
-    "vitest": "^4.0.17"
+    "typescript-eslint-standard": "^10.0.0",
+    "vitest": "^4.0.18"
   },
   "author": "mivui",
   "license": "MIT",

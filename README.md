@@ -16,10 +16,10 @@ npm i ws-stomp
 
 ```ts
 import { createServer } from 'http';
-import wsstomp from 'ws-stomp';
+import stomp from 'ws-stomp';
 
 const server = createServer();
-wsstomp.server(server, '/ws');
+stomp.server(server, '/ws');
 server.listen(3000);
 // ws://lcalhost:3000/ws
 ```
@@ -27,20 +27,20 @@ server.listen(3000);
 ### send
 
 ```ts
-import wsstomp from 'ws-stomp';
+import stomp from 'ws-stomp';
 
 function publish() {
-  wsstomp.send('/topic/something', JSON.stringify({ name: 'name' }), { token: 'token' });
+  stomp.send('/topic/something', JSON.stringify({ name: 'name' }), { token: 'token' });
 }
 ```
 
 ### subscribe
 
 ```ts
-import wsstomp from 'ws-stomp';
+import stomp from 'ws-stomp';
 
 function subscribe() {
-  wsstomp.subscribe('/topic/greetings', (e) => {
+  stomp.subscribe('/topic/greetings', (e) => {
     const body = e.body;
   });
 }
@@ -49,10 +49,10 @@ function subscribe() {
 ### unsubscribe
 
 ```ts
-import wsstomp from 'ws-stomp';
+import stomp from 'ws-stomp';
 
 function unsubscribe() {
-  wsstomp.unsubscribe('/topic/greetings');
+  stomp.unsubscribe('/topic/greetings');
 }
 ```
 
@@ -62,16 +62,16 @@ function unsubscribe() {
 
 ```ts
 import express from 'express';
-import wsstomp from 'ws-stomp';
+import stomp from 'ws-stomp';
 
 const app = express();
 app.get('/send', (_, res) => {
-  wsstomp.send('/topic/something', 'payload');
+  stomp.send('/topic/something', 'payload');
   res.status(200).json({});
 });
 const server = app.listen(3000);
-wsstomp.server(server, '/ws');
-wsstomp.subscribe('/topic/greetings', (message) => {
+stomp.server(server, '/ws');
+stomp.subscribe('/topic/greetings', (message) => {
   console.log(message.body);
 });
 ```
