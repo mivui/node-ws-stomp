@@ -113,7 +113,7 @@ export class WebsocketGateway {
   private readonly server: StompServer;
 
   @SubscribeMessage('/topic/greetings')
-  public send(@MessageBody() message: StompFrame) {
+  public handleMessage(@MessageBody() message: StompFrame) {
     console.log(message.body);
     this.server.send('/topic/something', message.body);
   }
