@@ -1,5 +1,5 @@
 export enum StompCommand {
-  PING = 'PING',
+  PING = 'PING', //custom usage
   CONNECT = 'CONNECT',
   CONNECTED = 'CONNECTED',
   SEND = 'SEND',

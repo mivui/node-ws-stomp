@@ -1,13 +1,12 @@
-import crypto from 'crypto';
+import { randomUUID } from 'crypto';
 import { type Server as HTTPServer } from 'http';
 import { type Server as HTTPSServer } from 'https';
-import WebSocket from 'ws';
-import { WebSocketServer } from 'ws';
+import { WebSocket, WebSocketServer } from 'ws';
 
 import { type AuthProvider } from './auth.js';
 import { BYTE, StompCommand, StompFrame } from './frame.js';
 
-export interface SubscribeClient {
+export interface Client {
   id: string;
   destination: string;
   ws: WebSocket;
@@ -15,23 +14,22 @@ export interface SubscribeClient {
 
 export type SubscribeHandler = (frame: StompFrame) => void;
 
-export interface StompServerConstructor {
+export interface StompServerOptions {
   server: HTTPServer | HTTPSServer;
   path: string;
-  authProvider?: AuthProvider;
+  auth?: AuthProvider;
 }
 
-export class StompServer {
-  private readonly ws: WebSocketServer;
-  private subscribeClients: SubscribeClient[] = []; //已订阅的客户端
-  private readonly subscribehandler = new Map<string, SubscribeHandler>(); //服务端订阅处理
-  private readonly authProvider?: AuthProvider;
+export class StompServer extends WebSocketServer {
+  private _clients: Client[] = []; // 已订阅的客户端
+  private readonly _handlers = new Map<string, SubscribeHandler>(); // 服务端订阅处理
+  private readonly auth?: AuthProvider;
 
-  private constructor(options: StompServerConstructor) {
-    const { server, path, authProvider } = options;
-    this.authProvider = authProvider;
-    this.ws = new WebSocketServer({ server, path });
-    this.ws.on('connection', (ws) => {
+  constructor(options: StompServerOptions) {
+    const { server, path, auth } = options;
+    super({ server, path });
+    this.auth = auth;
+    this.on('connection', (ws) => {
       ws.on('message', (data: Buffer) => {
         this.handleMessage(data, ws);
       });
@@ -39,10 +37,6 @@ export class StompServer {
         this.cleanupSubscriptions(ws);
       });
     });
-  }
-
-  public static server(options: StompServerConstructor) {
-    return new StompServer(options);
   }
 
   private async handleMessage(data: Buffer, ws: WebSocket) {
@@ -89,7 +83,7 @@ export class StompServer {
 
   private async handleConnect(frame: StompFrame, ws: WebSocket) {
     // 认证检查（如果启用）
-    if (this.authProvider && !(await this.authProvider.authenticate(frame))) {
+    if (this.auth && !(await this.auth.authenticate(frame))) {
       this.sendError(ws, 'Authentication failed');
       ws.close();
       return;
@@ -104,7 +98,7 @@ export class StompServer {
 
   private handleSend(frame: StompFrame, _ws: WebSocket) {
     const { destination } = frame.headers;
-    this.subscribehandler.forEach((callback, key) => {
+    this._handlers.forEach((callback, key) => {
       if (destination === key) {
         callback(frame);
       }
@@ -118,7 +112,7 @@ export class StompServer {
       this.sendError(ws, 'Missing subscription headers');
       return;
     }
-    this.subscribeClients.push({
+    this._clients.push({
       id: subId,
       destination,
       ws,
@@ -127,9 +121,7 @@ export class StompServer {
 
   private handleUnsubscribe(frame: StompFrame, ws: WebSocket) {
     const subId = frame.headers.id;
-    this.subscribeClients = this.subscribeClients.filter(
-      (sub) => !(sub.id === subId && sub.ws === ws),
-    );
+    this._clients = this._clients.filter((sub) => !(sub.id === subId && sub.ws === ws));
   }
 
   private handleDisconnect(ws: WebSocket) {
@@ -139,26 +131,24 @@ export class StompServer {
 
   // 清理断开连接的订阅
   private cleanupSubscriptions(ws: WebSocket) {
-    this.subscribeClients = this.subscribeClients.filter((sub) => sub.ws !== ws);
+    this._clients = this._clients.filter((sub) => sub.ws !== ws);
   }
 
   // 清理断开连接的WebSocket
   private cleanupWebsockets() {
-    this.subscribeClients = this.subscribeClients.filter(
-      (sub) => sub.ws.readyState === WebSocket.OPEN,
-    );
+    this._clients = this._clients.filter((sub) => sub.ws.readyState === WebSocket.OPEN);
   }
 
   // 服务端主动发送消息
   public send(destination: string, body: string, headers: Record<string, string> = {}) {
-    const subs = this.subscribeClients.filter((sub) => sub.destination === destination);
+    const subs = this._clients.filter((sub) => sub.destination === destination);
     if (subs.length) {
       subs.forEach((sub) => {
         const frame = new StompFrame(
           StompCommand.MESSAGE,
           {
             destination,
-            'message-id': crypto.randomUUID(),
+            'message-id': randomUUID(),
             timestamp: `${Date.now()}`,
             subscription: sub.id,
             ...headers,
@@ -175,11 +165,11 @@ export class StompServer {
   }
 
   public subscribe(destination: string, callback: (frame: StompFrame) => void) {
-    this.subscribehandler.set(destination, callback);
+    this._handlers.set(destination, callback);
   }
 
   public unsubscribe(destination: string) {
-    this.subscribehandler.delete(destination);
+    this._handlers.delete(destination);
   }
 
   private sendError(ws: WebSocket, message: string) {
