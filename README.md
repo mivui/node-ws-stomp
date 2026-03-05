@@ -4,7 +4,7 @@
 [![Alt](https://img.shields.io/npm/dt/ws-stomp?style=flat-square)](https://npmcharts.com/compare/ws-stomp?minimal=true)
 ![Alt](https://img.shields.io/github/license/mivui/node-ws-stomp?style=flat-square)
 
-### implementation of the stomp version of ws
+### stomp websocket library for node.js
 
 ### install
 
