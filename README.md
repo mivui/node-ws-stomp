@@ -1,6 +1,6 @@
 # ws-stomp
 
-[![npm version](https://img.shields.io/npm/v/ws-Stomp.svg?style=flat-square)](https://www.npmjs.com/package/ws-stomp)
+[![npm version](https://img.shields.io/npm/v/ws-stomp.svg?style=flat-square)](https://www.npmjs.com/package/ws-stomp)
 [![Alt](https://img.shields.io/npm/dt/ws-stomp?style=flat-square)](https://npmcharts.com/compare/ws-stomp?minimal=true)
 ![Alt](https://img.shields.io/github/license/mivui/node-ws-stomp?style=flat-square)
 
@@ -147,21 +147,4 @@ async function bootstrap() {
   await app.listen(3000);
 }
 bootstrap();
-```
-
-#### browser.js
-
-```ts
-import { Client } from '@stomp/stompjs';
-
-const client = new Client({
-  brokerURL: 'ws://lcalhost:3000/ws',
-  onConnect: () => {
-    client.publish({ destination: '/topic/greetings', body: 'Hello World!' });
-    client.subscribe('/topic/something', (message) => {
-      console.log(message.body);
-    });
-  },
-});
-client.activate();
 ```
